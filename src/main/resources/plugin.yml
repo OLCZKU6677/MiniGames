@@ -2,5 +2,9 @@ name: MiniGames
 version: '${version}'
 author: _olczku_
 main: pl.olczku.miniGames.MiniGames
-api-version: '1.21.11'
+api-version: '1.21'
 load: POSTWORLD
+softdepend: [Nexo]
+permissions:
+  minigames.randomizer.admin:
+    default: op
