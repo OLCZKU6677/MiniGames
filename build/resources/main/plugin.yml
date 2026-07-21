@@ -1,0 +1,6 @@
+name: MiniGames
+version: '1.0-SNAPSHOT'
+author: _olczku_
+main: pl.olczku.miniGames.MiniGames
+api-version: '1.21.11'
+load: POSTWORLD
