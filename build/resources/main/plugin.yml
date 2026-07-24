@@ -1,6 +1,15 @@
 name: MiniGames
-version: '1.0-SNAPSHOT'
+version: '1.0.0'
 author: _olczku_
 main: pl.olczku.miniGames.MiniGames
-api-version: '1.21.11'
+api-version: '1.21'
 load: POSTWORLD
+softdepend: [Nexo]
+commands:
+  randomizer:
+    aliases: [rand]
+    description: Otwiera menu trybu Randomizer
+    usage: /randomizer [dolacz <1v1|2v2|4v4>|opusc]
+permissions:
+  minigames.randomizer.admin:
+    default: op

@@ -1,0 +1,191 @@
+import java.util.Properties
+
+plugins {
+    id 'java-library'
+    id 'com.gradleup.shadow' version '9.0.0'
+    id 'xyz.jpenilla.run-paper' version '3.0.2'
+    id 'org.hidetake.ssh' version '2.12.0'
+}
+
+group = 'pl.olczku'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url = 'https://repo.papermc.io/repository/maven-public/'
+    }
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+def pluginVersion = version.toString()
+
+tasks.named('processResources', ProcessResources) {
+    inputs.property('version', pluginVersion)
+
+    filesMatching('plugin.yml') {
+        expand(version: pluginVersion)
+    }
+}
+
+tasks.named('jar', Jar) {
+    archiveClassifier = 'plain'
+}
+
+tasks.named('shadowJar') {
+    archiveClassifier = ''
+}
+
+// ========================================
+// PLIK KONFIGURACYJNY Z FOLDERU DOKUMENTY
+// ========================================
+
+def sftpProperties = new Properties()
+
+def sftpConfigFile = new File(
+        System.getProperty('user.home'),
+        'Documents/sftp.properties'
+)
+
+if (!sftpConfigFile.exists()) {
+    throw new GradleException(
+            "Nie znaleziono pliku: ${sftpConfigFile.absolutePath}"
+    )
+}
+
+sftpConfigFile.withInputStream { input ->
+    sftpProperties.load(input)
+}
+
+def sftpHost = sftpProperties.getProperty('host')?.trim()
+def sftpPortText = sftpProperties.getProperty('port')?.trim()
+def sftpUsername = sftpProperties.getProperty('username')?.trim()
+def sftpPassword = sftpProperties.getProperty('password')
+def sftpPluginDirectory =
+        sftpProperties.getProperty('pluginDirectory', '/')?.trim()
+
+if (!sftpHost) {
+    throw new GradleException(
+            "Brak wartości 'host' w ${sftpConfigFile.absolutePath}"
+    )
+}
+
+if (!sftpPortText) {
+    throw new GradleException(
+            "Brak wartości 'port' w ${sftpConfigFile.absolutePath}"
+    )
+}
+
+if (!sftpUsername) {
+    throw new GradleException(
+            "Brak wartości 'username' w ${sftpConfigFile.absolutePath}"
+    )
+}
+
+if (sftpPassword == null || sftpPassword.isEmpty()) {
+    throw new GradleException(
+            "Brak wartości 'password' w ${sftpConfigFile.absolutePath}"
+    )
+}
+
+def sftpPort
+
+try {
+    sftpPort = sftpPortText.toInteger()
+} catch (NumberFormatException ignored) {
+    throw new GradleException(
+            "Nieprawidłowy port SFTP: '${sftpPortText}'"
+    )
+}
+
+// ========================================
+// KONFIGURACJA SERWERA
+// ========================================
+
+remotes {
+    minecraftServer {
+        host = sftpHost
+        port = sftpPort
+        user = sftpUsername
+        password = sftpPassword
+        knownHosts = allowAnyHosts
+    }
+}
+
+// ========================================
+// WYSYŁANIE PLUGINU
+// ========================================
+
+tasks.register('uploadPlugin') {
+    group = 'deployment'
+    description = 'Buduje i wysyła plugin na serwer przez SFTP.'
+
+    dependsOn tasks.named('shadowJar')
+
+    notCompatibleWithConfigurationCache(
+            'Gradle SSH Plugin nie obsługuje poprawnie configuration cache.'
+    )
+
+    doLast {
+        def pluginFile = tasks.named('shadowJar')
+                .get()
+                .archiveFile
+                .get()
+                .asFile
+
+        if (!pluginFile.exists()) {
+            throw new GradleException(
+                    "Nie znaleziono pliku pluginu: ${pluginFile.absolutePath}"
+            )
+        }
+
+        println ''
+        println '========================================'
+        println 'Wysyłanie pluginu przez SFTP'
+        println "Plik: ${pluginFile.absolutePath}"
+        println "Serwer: ${sftpHost}:${sftpPort}"
+        println "Użytkownik: ${sftpUsername}"
+        println "Katalog docelowy: ${sftpPluginDirectory}"
+        println '========================================'
+        println ''
+
+        project.extensions.getByName('ssh').run {
+            session(project.extensions
+                    .getByName('remotes')
+                    .getByName('minecraftServer')) {
+
+                put(
+                        from: pluginFile,
+                        into: sftpPluginDirectory
+                )
+            }
+        }
+
+        println ''
+        println "Wysłano plugin: ${pluginFile.name}"
+    }
+}
+
+// Po wykonaniu build uruchamia wysyłanie.
+tasks.named('build') {
+    finalizedBy tasks.named('uploadPlugin')
+}
+
+tasks.named('runServer') {
+    minecraftVersion('1.21.11')
+    jvmArgs('-Xms2G', '-Xmx2G')
+}
