@@ -18,6 +18,7 @@ public final class RandomizerConfig {
     public int gameDurationSeconds;
     public int borderDelaySeconds;
     public double borderWaitingSize;
+    public double borderFfaWaitingSize;
     public double borderGameSize;
     public double borderEndSize;
     public int borderShrinkSeconds;
@@ -84,6 +85,17 @@ public final class RandomizerConfig {
     public String menuModeName;
     public String menuPlayers;
     public String menuClick;
+    public String adminNoPermission;
+    public String adminUsage;
+    public String adminArenaNotFound;
+    public String adminPlayerNotFound;
+    public String adminTeleported;
+    public String adminStoppedMessage;
+    public String adminListHeader;
+    public String adminListLine;
+    public String adminNoActiveArenas;
+    public String adminStopTitle;
+    public String adminStopSubtitle;
 
     public static RandomizerConfig load(JavaPlugin plugin) {
         File file = new File(plugin.getDataFolder(), "randomizer.yml");
@@ -113,8 +125,8 @@ public final class RandomizerConfig {
             yaml.set("messages.usage-join", "&eUżycie: &f/randomizer dolacz <1v1|2v2|4v4>");
             yaml.set("messages.usage-main", "&eUżycie: &f/randomizer [dolacz <1v1|2v2|4v4>|opusc]");
             yaml.set("messages.invalid-mode", "&cNieprawidłowy tryb. Dostępne: &f1v1, 2v2, 4v4&c.");
-            yaml.set("titles.waiting.title", "&6&lOCZEKIWANIE...");
-            yaml.set("titles.waiting.subtitle", "&6🔥 &7Graczy &e{players}/{max} &8✦ &7Brakuje &e{missing} {player-word} &6🔥");
+            yaml.set("titles.waiting.title", "&4&lᴏᴄᴢᴇᴋɪᴡᴀɴɪᴇ...");
+            yaml.set("titles.waiting.subtitle", "&4🔥 &cɢʀᴀᴄᴢʏ &4{players}/{max} &8✦ &cʙʀᴀᴋᴜᴊᴇ &4{missing} {player-word} &c🔥");
             yaml.set("titles.countdown.title", "&6&lSTART ZA {seconds}");
             yaml.set("titles.countdown.subtitle", "&7Przygotuj się do walki!");
             yaml.set("titles.start.title", "&6&lRANDOMIZER");
@@ -295,7 +307,68 @@ public final class RandomizerConfig {
             yaml.set("worlds.preload-chunks-per-tick", 4);
         }
 
-        yaml.addDefault("config-version", 11);
+
+        if (configVersion < 12) {
+            yaml.set("config-version", 12);
+            yaml.set("messages.no-winner", "&cɴɪᴋᴛ");
+            yaml.set("messages.already-playing", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &cᴊᴜᴢ ᴊᴇꜱᴛᴇꜱ ᴡ ᴋᴏʟᴇᴊᴄᴇ ʟᴜʙ ɢʀᴢᴇ.");
+            yaml.set("messages.game-running", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &cɢʀᴀ ᴊᴜᴢ ᴛʀᴡᴀ.");
+            yaml.set("messages.queue-full", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &cᴀʀᴇɴᴀ ᴊᴇꜱᴛ ᴘᴇʟɴᴀ.");
+            yaml.set("messages.no-arena", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &cʙʀᴀᴋ ᴡᴏʟɴᴇᴊ ᴀʀᴇɴʏ.");
+            yaml.set("messages.join", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &cᴘʀᴢᴇɴᴏꜱᴢᴇ ɴᴀ ᴀʀᴇɴᴇ.");
+            yaml.set("messages.leave", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &cᴏᴘᴜꜱᴄɪʟᴇꜱ ᴀʀᴇɴᴇ.");
+            yaml.set("messages.not-playing", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &cɴɪᴇ ɢʀᴀꜱᴢ ᴡ ʀᴀɴᴅᴏᴍɪᴢᴇʀᴢᴇ.");
+            yaml.set("messages.game-started", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &cɢʀᴀ ᴡʏꜱᴛᴀʀᴛᴏᴡᴀʟᴀ!");
+            yaml.set("messages.good-luck", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &cᴘᴏᴡᴏᴅᴢᴇɴɪᴀ!");
+            yaml.set("messages.border-shrink", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &cʙᴏʀᴅᴇʀ ᴢᴀᴄᴢʏɴᴀ ꜱɪᴇ ᴢᴍɴɪᴇᴊꜱᴢᴀᴄ.");
+            yaml.set("messages.death", "&4☠ &c{player} &4ᴢɢɪɴᴀʟ!");
+            yaml.set("messages.winner-chat", "&4🏆 &c{winner} &4ᴡʏɢʀᴀʟ ɢʀᴇ!");
+            yaml.set("messages.only-players", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &cᴛᴀ ᴋᴏᴍᴇɴᴅᴀ ᴊᴇꜱᴛ ᴛʏʟᴋᴏ ᴅʟᴀ ɢʀᴀᴄᴢʏ.");
+            yaml.set("messages.usage-join", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &c/randomizer dolacz <1v1|2v2|4v4|ffa>");
+            yaml.set("messages.usage-main", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &c/randomizer [dolacz <1v1|2v2|4v4|ffa>|opusc]");
+            yaml.set("messages.invalid-mode", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ &8» &cᴛʀʏʙʏ: 1v1, 2v2, 4v4, ffa.");
+            yaml.set("titles.waiting.title", "&4&lᴏᴄᴢᴇᴋɪᴡᴀɴɪᴇ...");
+            yaml.set("titles.waiting.subtitle", "&4🔥 &cɢʀᴀᴄᴢʏ &4{players}/{max} &8✦ &cʙʀᴀᴋᴜᴊᴇ &4{missing} {player-word} &c🔥");
+            yaml.set("titles.countdown.title", "&4&lꜱᴛᴀʀᴛ ᴢᴀ &c{seconds}");
+            yaml.set("titles.countdown.subtitle", "&cᴘʀᴢʏɢᴏᴛᴜᴊ ꜱɪᴇ ᴅᴏ ᴡᴀʟᴋɪ!");
+            yaml.set("titles.start.title", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ");
+            yaml.set("titles.start.subtitle", "&cᴘᴏᴡᴏᴅᴢᴇɴɪᴀ!");
+            yaml.set("titles.winner.title", "&4&l🏆 &c{winner}");
+            yaml.set("titles.winner.subtitle", "&cᴡʏɢʀᴀʟ ɢʀᴇ!");
+            yaml.set("titles.loser.title", "&4&lᴘʀᴢᴇɢʀᴀʟᴇꜱ!");
+            yaml.set("titles.loser.subtitle", "&cᴍᴏᴢᴇꜱᴢ ᴏʙꜱᴇʀᴡᴏᴡᴀᴄ ɢʀᴇ ʟᴜʙ ᴡᴘɪꜱᴀᴄ &4/ᴏᴘᴜꜱᴄ");
+            yaml.set("actionbar.item-countdown", "&4🌞 &cʟᴏꜱᴏᴡᴀɴɪᴇ ᴘʀᴢᴇᴅᴍɪᴏᴛᴜ ᴢᴀ &4{seconds}ꜱ &c🌞");
+            yaml.set("actionbar.item-received", "&4✹ &cᴡʏʟᴏꜱᴏᴡᴀɴᴏ: &4{item} &c✹");
+            yaml.set("actionbar.spectator", "&4✦ &cᴀʙʏ ᴘᴏᴡʀᴏᴄɪᴄ ɴᴀ ꜱᴘᴀᴡɴ ᴡᴘɪꜱᴢ &4/ᴏᴘᴜꜱᴄ &c✦");
+            yaml.set("leave-item.name", "&4&lᴏᴘᴜꜱᴄ");
+            yaml.set("leave-item.lore", List.of("&cᴋʟɪᴋɴɪᴊ ᴘᴘᴍ, ᴀʙʏ ᴏᴘᴜꜱᴄɪᴄ", "&cʀᴏᴢɢʀʏᴡᴋᴇ ʀᴀɴᴅᴏᴍɪᴢᴇʀ."));
+            yaml.set("scoreboard.lines", List.of("", "&cNick: &4{player}", "&cTeammate: &4{teammate}", "", "&4⚔ &cZabójstwa: &4{kills}", "&4☠ &cŚmierci: &4{deaths}", "&4⌛ &cCzas: &4{minutes}min, {seconds}s", "&cBorder: &4{border}", "", "&cGraczy online: &4{online}", "", "&c{website}"));
+            yaml.set("spawn-scoreboard.lines", List.of("", "&cNick: &4{player}", "", "&4🏆 &cWygrane: &4{wins}", "&4⚔ &cZabójstwa: &4{kills}", "&4☠ &cŚmierci: &4{deaths}", "&4⌛ &cCzas: &4{hours}h, {minutes}min", "", "&cGraczy online: &4{online}", "", "&c{website}"));
+            yaml.set("tab.header", List.of("", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ", "&cAktualnie gra: &4{online} &cgraczy", ""));
+            yaml.set("tab.footer", List.of("", "&4✦ &cJesteś na trybie: &4&lRANDOMIZER &c✦", "&cStrona: &4{website} &8• &cDiscord: &4{discord}", ""));
+            yaml.set("spawn-tab.header", yaml.get("tab.header"));
+            yaml.set("spawn-tab.footer", yaml.get("tab.footer"));
+            yaml.set("menu.title", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ");
+            yaml.set("menu.mode-name", "&4&l{mode}");
+            yaml.set("menu.players", "&cɢʀᴀᴄᴢᴇ: &4{players}/{max}");
+            yaml.set("menu.click", "&cᴋʟɪᴋɴɪᴊ, ᴀʙʏ ᴅᴏʟᴀᴄᴢʏᴄ");
+        }
+        if (configVersion < 14) {
+            yaml.set("config-version", 14);
+            yaml.set("admin.messages.no-permission", "&4&lADMIN &8» &cNie masz uprawnień.");
+            yaml.set("admin.messages.usage", "&4&lADMIN &8» &c/admin <list|tp <id>|playertp <nick>|stop <id>>");
+            yaml.set("admin.messages.arena-not-found", "&4&lADMIN &8» &cNie znaleziono areny.");
+            yaml.set("admin.messages.player-not-found", "&4&lADMIN &8» &cGracz nie jest online albo nie znajduje się na arenie.");
+            yaml.set("admin.messages.teleported", "&4&lADMIN &8» &cPrzeniesiono na arenę jako spectator.");
+            yaml.set("admin.messages.stopped", "&4&lADMIN &8» &cAdministrator zatrzymał arenę.");
+            yaml.set("admin.messages.list-header", "&4&lADMIN &8» &cAktywne areny:");
+            yaml.set("admin.messages.list-line", "&4#{id} &c{mode} &8• &c{players}/{max} &8• &c{state}");
+            yaml.set("admin.messages.no-active-arenas", "&4&lADMIN &8» &cBrak aktywnych aren.");
+            yaml.set("admin.titles.stopped.title", "&4&lROZGRYWKA ZATRZYMANA");
+            yaml.set("admin.titles.stopped.subtitle", "&cAdministrator zatrzymał Twoją arenę.");
+        }
+
+        yaml.addDefault("config-version", 14);
         yaml.addDefault("countdown-seconds", 10);
         yaml.addDefault("item-interval-seconds", 20);
         yaml.addDefault("game-duration-seconds", 600);
@@ -308,6 +381,7 @@ public final class RandomizerConfig {
         yaml.addDefault("worlds.preload-chunks-per-tick", 4);
         yaml.addDefault("border.delay-seconds", 0);
         yaml.addDefault("border.waiting-size", 25.0);
+        yaml.addDefault("border.ffa-waiting-size", 35.0);
         yaml.addDefault("border.game-size", 300.0);
         yaml.addDefault("border.end-size", 5.0);
         yaml.addDefault("border.shrink-seconds", 600);
@@ -370,7 +444,7 @@ public final class RandomizerConfig {
         yaml.addDefault("leave-item.lore", List.of("&7Kliknij PPM, aby opuścić", "&7rozgrywkę Randomizer."));
 
         yaml.addDefault("scoreboard.title", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ");
-        yaml.addDefault("scoreboard.lines", List.of("", "&7Nick: &c{player}", "&7Teammate: &c{teammate}", "", "&6🏆 &7Wygrane: &c{wins}", "&4⚔ &7Zabójstwa: &c{kills}", "&c☠ &7Śmierci: &c{deaths}", "&6⌛ &7Czas: &c{minutes}min, {seconds}s", "&7Border: &c{border}", "", "&7Graczy online: &c{online}", "", "&c{website}"));
+        yaml.addDefault("scoreboard.lines", List.of("", "&7Nick: &c{player}", "&7Teammate: &c{teammate}", "", "&4⚔ &7Zabójstwa: &c{kills}", "&c☠ &7Śmierci: &c{deaths}", "&6⌛ &7Czas: &c{minutes}min, {seconds}s", "&7Border: &c{border}", "", "&7Graczy online: &c{online}", "", "&c{website}"));
 
         yaml.addDefault("tab.header", List.of("", "&4&lʀᴀɴᴅᴏᴍɪᴢᴇʀ", "&7Aktualnie gra: &c{online} graczy", ""));
         yaml.addDefault("tab.footer", List.of("", "&c✦ &7Jesteś na trybie: &4&lRANDOMIZER &c✦", "&7Strona: &c{website} &8• &7Discord: &c{discord}", ""));
@@ -384,6 +458,18 @@ public final class RandomizerConfig {
         yaml.addDefault("menu.mode-name", "&c&l{mode}");
         yaml.addDefault("menu.players", "&cɢʀᴀᴄᴢᴇ: &4{players}/{max}");
         yaml.addDefault("menu.click", "&cᴋʟɪᴋɴɪᴊ, ᴀʙʏ ᴅᴏʟᴀᴄᴢʏᴄ");
+
+        yaml.addDefault("admin.messages.no-permission", "&4&lADMIN &8» &cNie masz uprawnień.");
+        yaml.addDefault("admin.messages.usage", "&4&lADMIN &8» &c/admin <list|tp <id>|playertp <nick>|stop <id>>");
+        yaml.addDefault("admin.messages.arena-not-found", "&4&lADMIN &8» &cNie znaleziono areny.");
+        yaml.addDefault("admin.messages.player-not-found", "&4&lADMIN &8» &cGracz nie jest online albo nie znajduje się na arenie.");
+        yaml.addDefault("admin.messages.teleported", "&4&lADMIN &8» &cPrzeniesiono na arenę jako spectator.");
+        yaml.addDefault("admin.messages.stopped", "&4&lADMIN &8» &cAdministrator zatrzymał arenę.");
+        yaml.addDefault("admin.messages.list-header", "&4&lADMIN &8» &cAktywne areny:");
+        yaml.addDefault("admin.messages.list-line", "&4#{id} &c{mode} &8• &c{players}/{max} &8• &c{state}");
+        yaml.addDefault("admin.messages.no-active-arenas", "&4&lADMIN &8» &cBrak aktywnych aren.");
+        yaml.addDefault("admin.titles.stopped.title", "&4&lROZGRYWKA ZATRZYMANA");
+        yaml.addDefault("admin.titles.stopped.subtitle", "&cAdministrator zatrzymał Twoją arenę.");
 
         yaml.options().copyDefaults(true);
         try {
@@ -405,6 +491,7 @@ public final class RandomizerConfig {
         c.preloadChunksPerTick = Math.max(1, Math.min(32, yaml.getInt("worlds.preload-chunks-per-tick", 4)));
         c.borderDelaySeconds = Math.max(0, yaml.getInt("border.delay-seconds"));
         c.borderWaitingSize = Math.max(5.0, yaml.getDouble("border.waiting-size", 25.0));
+        c.borderFfaWaitingSize = Math.max(5.0, yaml.getDouble("border.ffa-waiting-size", 35.0));
         c.borderGameSize = Math.max(c.borderWaitingSize, yaml.getDouble("border.game-size", 300.0));
         c.borderEndSize = Math.max(1.0, yaml.getDouble("border.end-size"));
         c.borderShrinkSeconds = Math.max(1, yaml.getInt("border.shrink-seconds"));
@@ -437,8 +524,8 @@ public final class RandomizerConfig {
         c.msgUsageMain = yaml.getString("messages.usage-main", "");
         c.msgInvalidMode = yaml.getString("messages.invalid-mode", "");
         c.msgNoWinner = yaml.getString("messages.no-winner", "Nikt");
-        c.titleWaiting = nonBlank(yaml.getString("titles.waiting.title"), "&6&lOCZEKIWANIE...");
-        c.subtitleWaiting = nonBlank(yaml.getString("titles.waiting.subtitle"), "&6🔥 &7Graczy &e{players}/{max} &8✦ &7Brakuje &e{missing} {player-word} &6🔥");
+        c.titleWaiting = nonBlank(yaml.getString("titles.waiting.title"), "&4&lᴏᴄᴢᴇᴋɪᴡᴀɴɪᴇ...");
+        c.subtitleWaiting = nonBlank(yaml.getString("titles.waiting.subtitle"), "&4🔥 &cɢʀᴀᴄᴢʏ &4{players}/{max} &8✦ &cʙʀᴀᴋᴜᴊᴇ &4{missing} {player-word} &c🔥");
         c.titleCountdown = nonBlank(yaml.getString("titles.countdown.title"), "&6&lSTART ZA {seconds}");
         c.subtitleCountdown = nonBlank(yaml.getString("titles.countdown.subtitle"), "&7Przygotuj się do walki!");
         c.titleStart = nonBlank(yaml.getString("titles.start.title"), "&6&lRANDOMIZER");
@@ -464,6 +551,17 @@ public final class RandomizerConfig {
         c.menuModeName = yaml.getString("menu.mode-name", "");
         c.menuPlayers = yaml.getString("menu.players", "");
         c.menuClick = yaml.getString("menu.click", "");
+        c.adminNoPermission = yaml.getString("admin.messages.no-permission", "");
+        c.adminUsage = yaml.getString("admin.messages.usage", "");
+        c.adminArenaNotFound = yaml.getString("admin.messages.arena-not-found", "");
+        c.adminPlayerNotFound = yaml.getString("admin.messages.player-not-found", "");
+        c.adminTeleported = yaml.getString("admin.messages.teleported", "");
+        c.adminStoppedMessage = yaml.getString("admin.messages.stopped", "");
+        c.adminListHeader = yaml.getString("admin.messages.list-header", "");
+        c.adminListLine = yaml.getString("admin.messages.list-line", "");
+        c.adminNoActiveArenas = yaml.getString("admin.messages.no-active-arenas", "");
+        c.adminStopTitle = yaml.getString("admin.titles.stopped.title", "");
+        c.adminStopSubtitle = yaml.getString("admin.titles.stopped.subtitle", "");
         return c;
     }
 

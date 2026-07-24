@@ -50,13 +50,13 @@ public final class PartyManager {
         switch (args[0].toLowerCase(Locale.ROOT)) {
             case "pomoc", "help" -> help(player);
             case "zapros", "invite" -> invite(player, args);
-            case "dolacz", "accept" -> accept(player);
+            case "dolacz", "accept" -> accept(player, args);
             case "odrzuc", "deny" -> deny(player);
             case "wyrzuc", "kick" -> kick(player, args);
             case "opusc", "leave" -> leave(player);
             case "lista", "list" -> list(player);
             case "lider", "leader" -> transferLeader(player, args);
-            default -> msg(player, "&4&lᴘᴀʀᴛʏ &8» &cɴɪᴇᴘʀᴀᴡɪᴅʟᴏᴡᴀ ᴋᴏᴍᴇɴᴅᴀ. &7ᴜᴢʏᴊ &c/party pomoc&7.");
+            default -> msg(player, "&4&lᴘᴀʀᴛʏ &8» &cɴɪᴇᴘʀᴀᴡɪᴅʟᴏᴡᴀ ᴋᴏᴍᴇɴᴅᴀ. &cᴜᴢʏᴊ &c/party pomoc&c.");
         }
     }
 
@@ -72,7 +72,7 @@ public final class PartyManager {
 
         int maxParty = mode == RandomizerMode.FFA ? 1 : mode.teamSize();
         if (members.size() > maxParty) {
-            msg(leader, "&4&lᴘᴀʀᴛʏ &8» &cᴘᴀʀᴛʏ ᴊᴇꜱᴛ ᴢᴀ ᴅᴜᴢᴇ ᴅʟᴀ ᴛʀʏʙᴜ &4" + mode.id() + "&c. &7ᴍᴀᴋꜱ: &c" + maxParty + "&7.");
+            msg(leader, "&4&lᴘᴀʀᴛʏ &8» &cᴘᴀʀᴛʏ ᴊᴇꜱᴛ ᴢᴀ ᴅᴜᴢᴇ ᴅʟᴀ ᴛʀʏʙᴜ &4" + mode.id() + "&c. &cᴍᴀᴋꜱ: &c" + maxParty + "&c.");
             return false;
         }
 
@@ -91,14 +91,14 @@ public final class PartyManager {
     }
 
     private void help(Player player) {
-        player.sendMessage(Text.mm("&4&lᴘᴀʀᴛʏ &8» &7ᴅᴏꜱᴛᴇᴘɴᴇ ᴋᴏᴍᴇɴᴅʏ:"));
-        player.sendMessage(Text.mm("&c/party zapros <gracz> &8- &7ᴢᴀᴘʀᴀꜱᴢᴀ ɢʀᴀᴄᴢᴀ"));
-        player.sendMessage(Text.mm("&c/party dolacz &8- &7ᴀᴋᴄᴇᴘᴛᴜᴊᴇ ᴢᴀᴘʀᴏꜱᴢᴇɴɪᴇ"));
-        player.sendMessage(Text.mm("&c/party odrzuc &8- &7ᴏᴅʀᴢᴜᴄᴀ ᴢᴀᴘʀᴏꜱᴢᴇɴɪᴇ"));
-        player.sendMessage(Text.mm("&c/party wyrzuc <gracz> &8- &7ᴜꜱᴜᴡᴀ ᴢ ᴘᴀʀᴛʏ"));
-        player.sendMessage(Text.mm("&c/party lider <gracz> &8- &7ᴘʀᴢᴇᴋᴀᴢᴜᴊᴇ ʟɪᴅᴇʀᴀ"));
-        player.sendMessage(Text.mm("&c/party lista &8- &7ᴘᴏᴋᴀᴢᴜᴊᴇ ꜱᴋʟᴀᴅ"));
-        player.sendMessage(Text.mm("&c/party opusc &8- &7ᴏᴘᴜꜱᴢᴄᴢᴀ ᴘᴀʀᴛʏ"));
+        player.sendMessage(Text.mm("&4&lᴘᴀʀᴛʏ &8» &cᴅᴏꜱᴛᴇᴘɴᴇ ᴋᴏᴍᴇɴᴅʏ:"));
+        player.sendMessage(Text.mm("&c/party zapros <gracz> &8- &cᴢᴀᴘʀᴀꜱᴢᴀ ɢʀᴀᴄᴢᴀ"));
+        player.sendMessage(Text.mm("&c/party dolacz <gracz> &8- &cᴀᴋᴄᴇᴘᴛᴜᴊᴇ ᴢᴀᴘʀᴏꜱᴢᴇɴɪᴇ"));
+        player.sendMessage(Text.mm("&c/party odrzuc &8- &cᴏᴅʀᴢᴜᴄᴀ ᴢᴀᴘʀᴏꜱᴢᴇɴɪᴇ"));
+        player.sendMessage(Text.mm("&c/party wyrzuc <gracz> &8- &cᴜꜱᴜᴡᴀ ᴢ ᴘᴀʀᴛʏ"));
+        player.sendMessage(Text.mm("&c/party lider <gracz> &8- &cᴘʀᴢᴇᴋᴀᴢᴜᴊᴇ ʟɪᴅᴇʀᴀ"));
+        player.sendMessage(Text.mm("&c/party lista &8- &cᴘᴏᴋᴀᴢᴜᴊᴇ ꜱᴋʟᴀᴅ"));
+        player.sendMessage(Text.mm("&c/party opusc &8- &cᴏᴘᴜꜱᴢᴄᴢᴀ ᴘᴀʀᴛʏ"));
     }
 
     private void invite(Player leader, String[] args) {
@@ -141,23 +141,32 @@ public final class PartyManager {
 
         invites.put(target.getUniqueId(), new Invite(leader.getUniqueId(), System.currentTimeMillis() + INVITE_LIFETIME_MILLIS));
         msg(leader, "&4&lᴘᴀʀᴛʏ &8» &cᴢᴀᴘʀᴏꜱᴢᴏɴᴏ &4" + target.getName() + "&c.");
-        msg(target, "&4&lᴘᴀʀᴛʏ &8» &c" + leader.getName() + " &7ᴢᴀᴘʀᴀꜱᴢᴀ ᴄɪᴇ ᴅᴏ ᴘᴀʀᴛʏ.");
-        msg(target, "&7ᴡᴘɪꜱᴢ &c/party dolacz &7ʟᴜʙ &c/party odrzuc&7. ᴢᴀᴘʀᴏꜱᴢᴇɴɪᴇ ᴡʏɢᴀꜱᴀ ᴘᴏ 60 ꜱᴇᴋᴜɴᴅᴀᴄʜ.");
+        msg(target, "&4&lᴘᴀʀᴛʏ &8» &c" + leader.getName() + " &cᴢᴀᴘʀᴀꜱᴢᴀ ᴄɪᴇ ᴅᴏ ᴘᴀʀᴛʏ.");
+        msg(target, "&cᴡᴘɪꜱᴢ &c/party dolacz " + leader.getName() + " &cʟᴜʙ &c/party odrzuc&c. ᴢᴀᴘʀᴏꜱᴢᴇɴɪᴇ ᴡʏɢᴀꜱᴀ ᴘᴏ 60 ꜱᴇᴋᴜɴᴅᴀᴄʜ.");
     }
 
-    private void accept(Player player) {
+    private void accept(Player player, String[] args) {
+        if (args.length < 2) {
+            msg(player, "&4&lᴘᴀʀᴛʏ &8» &cᴜᴢʏᴄɪᴇ: /party dolacz <gracz>");
+            return;
+        }
         if (service.modeOf(player.getUniqueId()) != null) {
             msg(player, "&4&lᴘᴀʀᴛʏ &8» &cɴɪᴇ ᴍᴏᴢᴇꜱᴢ ᴅᴏʟᴀᴄᴢʏᴄ ᴅᴏ ᴘᴀʀᴛʏ ᴘᴏᴅᴄᴢᴀꜱ ɢʀʏ.");
             return;
         }
 
-        Invite invite = invites.remove(player.getUniqueId());
+        Invite invite = invites.get(player.getUniqueId());
         if (invite == null || invite.expiresAt < System.currentTimeMillis()) {
             msg(player, "&4&lᴘᴀʀᴛʏ &8» &cɴɪᴇ ᴍᴀꜱᴢ ᴀᴋᴛʏᴡɴᴇɢᴏ ᴢᴀᴘʀᴏꜱᴢᴇɴɪᴀ.");
             return;
         }
 
         Player leader = Bukkit.getPlayer(invite.leaderId);
+        if (leader == null || !leader.isOnline() || !leader.getName().equalsIgnoreCase(args[1])) {
+            msg(player, "&4&lᴘᴀʀᴛʏ &8» &cɴɪᴇ ᴍᴀꜱᴢ ᴢᴀᴘʀᴏꜱᴢᴇɴɪᴀ ᴏᴅ &4" + args[1] + "&c.");
+            return;
+        }
+        invites.remove(player.getUniqueId());
         if (leader == null || !leader.isOnline()) {
             msg(player, "&4&lᴘᴀʀᴛʏ &8» &cʟɪᴅᴇʀ ᴘᴀʀᴛʏ ᴊᴇꜱᴛ ᴏꜰꜰʟɪɴᴇ.");
             return;
@@ -176,7 +185,7 @@ public final class PartyManager {
         removeFromCurrentParty(player.getUniqueId(), false);
         party.members.add(player.getUniqueId());
         byMember.put(player.getUniqueId(), party);
-        broadcast(party, "&4&lᴘᴀʀᴛʏ &8» &c" + player.getName() + " &7ᴅᴏʟᴀᴄᴢʏʟ ᴅᴏ ᴘᴀʀᴛʏ.");
+        broadcast(party, "&4&lᴘᴀʀᴛʏ &8» &c" + player.getName() + " &cᴅᴏʟᴀᴄᴢʏʟ ᴅᴏ ᴘᴀʀᴛʏ.");
     }
 
     private void deny(Player player) {
@@ -187,7 +196,7 @@ public final class PartyManager {
         }
         msg(player, "&4&lᴘᴀʀᴛʏ &8» &cᴏᴅʀᴢᴜᴄᴏɴᴏ ᴢᴀᴘʀᴏꜱᴢᴇɴɪᴇ.");
         Player leader = Bukkit.getPlayer(invite.leaderId);
-        if (leader != null) msg(leader, "&4&lᴘᴀʀᴛʏ &8» &c" + player.getName() + " &7ᴏᴅʀᴢᴜᴄɪʟ ᴢᴀᴘʀᴏꜱᴢᴇɴɪᴇ.");
+        if (leader != null) msg(leader, "&4&lᴘᴀʀᴛʏ &8» &c" + player.getName() + " &cᴏᴅʀᴢᴜᴄɪʟ ᴢᴀᴘʀᴏꜱᴢᴇɴɪᴇ.");
     }
 
     private void kick(Player leader, String[] args) {
@@ -215,7 +224,7 @@ public final class PartyManager {
         byMember.remove(targetId);
         Player target = Bukkit.getPlayer(targetId);
         if (target != null) msg(target, "&4&lᴘᴀʀᴛʏ &8» &cᴢᴏꜱᴛᴀʟᴇꜱ ᴡʏʀᴢᴜᴄᴏɴʏ ᴢ ᴘᴀʀᴛʏ.");
-        broadcast(party, "&4&lᴘᴀʀᴛʏ &8» &c" + nameOf(targetId) + " &7ᴢᴏꜱᴛᴀʟ ᴡʏʀᴢᴜᴄᴏɴʏ ᴢ ᴘᴀʀᴛʏ.");
+        broadcast(party, "&4&lᴘᴀʀᴛʏ &8» &c" + nameOf(targetId) + " &cᴢᴏꜱᴛᴀʟ ᴡʏʀᴢᴜᴄᴏɴʏ ᴢ ᴘᴀʀᴛʏ.");
     }
 
     private void leave(Player player) {
@@ -237,22 +246,22 @@ public final class PartyManager {
             party.members.remove(player.getUniqueId());
             byMember.remove(player.getUniqueId());
             msg(player, "&4&lᴘᴀʀᴛʏ &8» &cᴏᴘᴜꜱᴄɪʟᴇꜱ ᴘᴀʀᴛʏ.");
-            broadcast(party, "&4&lᴘᴀʀᴛʏ &8» &c" + player.getName() + " &7ᴏᴘᴜꜱᴄɪʟ ᴘᴀʀᴛʏ.");
+            broadcast(party, "&4&lᴘᴀʀᴛʏ &8» &c" + player.getName() + " &cᴏᴘᴜꜱᴄɪʟ ᴘᴀʀᴛʏ.");
         }
     }
 
     private void list(Player player) {
         Party party = byMember.get(player.getUniqueId());
         if (party == null) {
-            msg(player, "&4&lᴘᴀʀᴛʏ &8» &7ɴɪᴇ ᴊᴇꜱᴛᴇꜱ ᴡ ᴘᴀʀᴛʏ.");
+            msg(player, "&4&lᴘᴀʀᴛʏ &8» &cɴɪᴇ ᴊᴇꜱᴛᴇꜱ ᴡ ᴘᴀʀᴛʏ.");
             return;
         }
 
-        msg(player, "&4&lᴘᴀʀᴛʏ &8» &7ᴄᴢʟᴏɴᴋᴏᴡɪᴇ &c(" + party.members.size() + "/" + MAX_PARTY_SIZE + ")&7:");
+        msg(player, "&4&lᴘᴀʀᴛʏ &8» &cᴄᴢʟᴏɴᴋᴏᴡɪᴇ &c(" + party.members.size() + "/" + MAX_PARTY_SIZE + ")&c:");
         for (UUID id : party.members) {
-            String prefix = id.equals(party.leader) ? "&4★ &c" : "&8- &7";
+            String prefix = id.equals(party.leader) ? "&4★ &c" : "&8- &c";
             Player member = Bukkit.getPlayer(id);
-            String status = member != null && member.isOnline() ? " &aᴏɴʟɪɴᴇ" : " &cᴏꜰꜰʟɪɴᴇ";
+            String status = member != null && member.isOnline() ? " &cᴏɴʟɪɴᴇ" : " &cᴏꜰꜰʟɪɴᴇ";
             player.sendMessage(Text.mm(prefix + nameOf(id) + status));
         }
     }
@@ -274,7 +283,7 @@ public final class PartyManager {
         }
 
         party.leader = targetId;
-        broadcast(party, "&4&lᴘᴀʀᴛʏ &8» &7ɴᴏᴡʏ ʟɪᴅᴇʀ: &c" + nameOf(targetId) + "&7.");
+        broadcast(party, "&4&lᴘᴀʀᴛʏ &8» &cɴᴏᴡʏ ʟɪᴅᴇʀ: &c" + nameOf(targetId) + "&c.");
     }
 
     private void removeFromCurrentParty(UUID id, boolean notify) {
@@ -288,7 +297,7 @@ public final class PartyManager {
         if (party.members.isEmpty()) return;
         if (party.leader.equals(id)) {
             party.leader = party.members.iterator().next();
-            broadcast(party, "&4&lᴘᴀʀᴛʏ &8» &7ɴᴏᴡʏ ʟɪᴅᴇʀ: &c" + nameOf(party.leader) + "&7.");
+            broadcast(party, "&4&lᴘᴀʀᴛʏ &8» &cɴᴏᴡʏ ʟɪᴅᴇʀ: &c" + nameOf(party.leader) + "&c.");
         }
     }
 

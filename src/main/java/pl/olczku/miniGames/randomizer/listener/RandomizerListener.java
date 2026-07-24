@@ -168,6 +168,7 @@ public final class RandomizerListener implements Listener {
         event.getCommands().add("party");
         event.getCommands().add("p");
         event.getCommands().add("opusc");
+        if (event.getPlayer().hasPermission("randomizer.admin")) event.getCommands().add("admin");
     }
 
     @EventHandler
@@ -184,10 +185,26 @@ public final class RandomizerListener implements Listener {
 
         // Podpowiadanie samych komend po wpisaniu "/" lub ich początku.
         if (parts.length == 1) {
-            java.util.List<String> roots = java.util.List.of("opusc", "party", "p", "randomizer");
+            java.util.List<String> roots = player.hasPermission("randomizer.admin")
+                ? java.util.List.of("admin", "opusc", "party", "p", "randomizer")
+                : java.util.List.of("opusc", "party", "p", "randomizer");
             event.setCompletions(roots.stream()
                 .filter(option -> option.startsWith(root))
                 .toList());
+            return;
+        }
+
+        if (root.equals("admin") && player.hasPermission("randomizer.admin")) {
+            java.util.List<String> adminOptions;
+            if (parts.length <= 2) {
+                adminOptions = java.util.List.of("list", "tp", "playertp", "stop");
+            } else if (parts.length == 3 && parts[1].equalsIgnoreCase("playertp")) {
+                adminOptions = org.bukkit.Bukkit.getOnlinePlayers().stream().map(Player::getName).sorted(String.CASE_INSENSITIVE_ORDER).toList();
+            } else {
+                adminOptions = java.util.List.of();
+            }
+            String typedAdmin = parts[parts.length - 1].toLowerCase(java.util.Locale.ROOT);
+            event.setCompletions(adminOptions.stream().filter(option -> option.toLowerCase(java.util.Locale.ROOT).startsWith(typedAdmin)).toList());
             return;
         }
 
@@ -198,6 +215,7 @@ public final class RandomizerListener implements Listener {
             options = java.util.List.of("zapros", "dolacz", "odrzuc", "wyrzuc", "opusc", "lista", "lider", "pomoc");
         } else if (parts.length == 3 && (
             parts[1].equalsIgnoreCase("zapros")
+                || parts[1].equalsIgnoreCase("dolacz")
                 || parts[1].equalsIgnoreCase("wyrzuc")
                 || parts[1].equalsIgnoreCase("lider")
         )) {

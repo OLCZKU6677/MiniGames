@@ -24,6 +24,7 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import pl.olczku.miniGames.randomizer.config.RandomizerConfig;
+import pl.olczku.miniGames.randomizer.command.StandaloneCommands;
 import pl.olczku.miniGames.randomizer.gui.RandomizerMenu;
 import pl.olczku.miniGames.randomizer.item.RandomItemProvider;
 import pl.olczku.miniGames.randomizer.party.PartyManager;
@@ -32,17 +33,7 @@ import pl.olczku.miniGames.randomizer.stats.RandomizerStats;
 import pl.olczku.miniGames.randomizer.util.Text;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -53,6 +44,7 @@ public final class RandomizerService {
     private final List<WorldSlot> worldSlots = new ArrayList<>();
     private final List<PreparedArena> preparedArenas = new ArrayList<>();
     private final Map<UUID, RandomizerQueue> membership = new HashMap<>();
+    private final Map<UUID, RandomizerQueue> adminSpectators = new HashMap<>();
     private final Map<UUID, PlayerSnapshot> snapshots = new HashMap<>();
     private final Map<UUID, Integer> kills = new HashMap<>();
     private final Map<UUID, Scoreboard> previousScoreboards = new HashMap<>();
@@ -224,7 +216,7 @@ public final class RandomizerService {
 
         RandomizerQueue queue = findJoinable(mode);
         if (queue == null) {
-            ArenaSession session = allocateArena();
+            ArenaSession session = allocateArena(mode);
             if (session == null) {
                 boolean preparing = config.preloadArenaChunks
                     && preparedArenas.stream().anyMatch(arena -> !arena.ready && !arena.inUse);
@@ -271,6 +263,14 @@ public final class RandomizerService {
     }
 
     public void leave(Player player) {
+        RandomizerQueue adminQueue = adminSpectators.remove(player.getUniqueId());
+        if (adminQueue != null) {
+            restorePlayer(player);
+            updateLobbyVisuals(player);
+            refreshPlayerVisibility();
+            player.sendMessage(Text.mm(config.msgLeave));
+            return;
+        }
         RandomizerQueue queue = membership.remove(player.getUniqueId());
         separationCooldown.remove(player.getUniqueId());
         if (queue == null) {
@@ -298,6 +298,7 @@ public final class RandomizerService {
     }
 
     public void startTicker() {
+        StandaloneCommands.register(plugin, this);
         ticker = Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 20L, 20L);
         // Osobny, częstszy task utrzymuje TAB i scoreboard na spawnie także wtedy,
         // gdy inny plugin ustawia własny scoreboard po wejściu lub zmianie świata.
@@ -519,7 +520,7 @@ public final class RandomizerService {
         }
     }
 
-    private ArenaSession allocateArena() {
+    private ArenaSession allocateArena(RandomizerMode mode) {
         if (worldSlots.isEmpty()) return null;
 
         PreparedArena prepared = preparedArenas.stream()
@@ -545,7 +546,7 @@ public final class RandomizerService {
         }
         WorldBorder border = Bukkit.createWorldBorder();
         border.setCenter(center);
-        border.setSize(config.borderWaitingSize);
+        border.setSize(mode == RandomizerMode.FFA ? config.borderFfaWaitingSize : config.borderWaitingSize);
         // Paper 1.21.4 nie posiada setWarningTimeTicks(int).
         // Ustawienia ostrzezenia sa celowo oparte tylko na stabilnym API.
         border.setWarningDistance(3);
@@ -886,7 +887,13 @@ public final class RandomizerService {
             restorePlayer(player);
             updateLobbyVisuals(player);
         }
+        for (Player admin : new ArrayList<>(adminSpectators(queue))) {
+            adminSpectators.remove(admin.getUniqueId());
+            restorePlayer(admin);
+            updateLobbyVisuals(admin);
+        }
         removeArena(queue);
+        refreshPlayerVisibility();
     }
 
     private void removeArena(RandomizerQueue queue) {
@@ -986,6 +993,14 @@ public final class RandomizerService {
         return queue.players().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).toList();
     }
 
+    private List<Player> adminSpectators(RandomizerQueue queue) {
+        return adminSpectators.entrySet().stream()
+            .filter(entry -> entry.getValue() == queue)
+            .map(entry -> Bukkit.getPlayer(entry.getKey()))
+            .filter(Objects::nonNull)
+            .toList();
+    }
+
     private List<Player> alive(RandomizerQueue queue) {
         return online(queue).stream()
             .filter(player -> !eliminated.contains(player.getUniqueId()))
@@ -1004,6 +1019,10 @@ public final class RandomizerService {
 
     private void updateVisuals(RandomizerQueue queue) {
         for (Player player : online(queue)) {
+            updateScoreboard(player, queue);
+            updateTab(player, queue);
+        }
+        for (Player player : adminSpectators(queue)) {
             updateScoreboard(player, queue);
             updateTab(player, queue);
         }
@@ -1028,10 +1047,15 @@ public final class RandomizerService {
     }
 
     public boolean canSeeOrChat(Player viewer, Player target) {
-        RandomizerQueue viewerQueue = membership.get(viewer.getUniqueId());
-        RandomizerQueue targetQueue = membership.get(target.getUniqueId());
+        RandomizerQueue viewerQueue = queueForVisibility(viewer.getUniqueId());
+        RandomizerQueue targetQueue = queueForVisibility(target.getUniqueId());
         if (viewerQueue == null || targetQueue == null) return viewerQueue == null && targetQueue == null;
         return viewerQueue == targetQueue;
+    }
+
+    private RandomizerQueue queueForVisibility(UUID uuid) {
+        RandomizerQueue queue = membership.get(uuid);
+        return queue != null ? queue : adminSpectators.get(uuid);
     }
 
     public void refreshPlayerVisibility() {
@@ -1046,7 +1070,7 @@ public final class RandomizerService {
     }
 
     public void updateLobbyVisuals(Player player) {
-        if (player == null || !player.isOnline() || membership.containsKey(player.getUniqueId())) return;
+        if (player == null || !player.isOnline() || membership.containsKey(player.getUniqueId()) || adminSpectators.containsKey(player.getUniqueId())) return;
         updateLobbyScoreboard(player);
         updateLobbyTab(player);
     }
@@ -1120,7 +1144,12 @@ public final class RandomizerService {
         ph.put("wins", String.valueOf(stats.wins(player.getUniqueId())));
         ph.put("deaths", String.valueOf(stats.deaths(player.getUniqueId())));
 
-        List<String> lines = config.scoreboardLines;
+        List<String> lines = config.scoreboardLines.stream()
+            // Wygrane są pokazywane wyłącznie na scoreboardzie spawnu.
+            .filter(line -> !line.toLowerCase(Locale.ROOT).contains("{wins}"))
+            // Tryby solo (1v1 i FFA) nie pokazują w ogóle wiersza teammate.
+            .filter(line -> !isSoloMode(queue.mode()) || !line.toLowerCase(Locale.ROOT).contains("{teammate}"))
+            .toList();
         int score = Math.min(15, lines.size());
         int unique = 0;
         for (String line : lines.subList(Math.max(0, lines.size() - 15), lines.size())) {
@@ -1152,6 +1181,10 @@ public final class RandomizerService {
         ph.put("player", player == null ? "" : player.getName());
         ph.put("teammate", teammateText(queue, player));
         return ph;
+    }
+
+    private boolean isSoloMode(RandomizerMode mode) {
+        return mode == RandomizerMode.ONE_V_ONE || mode == RandomizerMode.FFA;
     }
 
     private String teammateText(RandomizerQueue queue, Player player) {
@@ -1188,6 +1221,63 @@ public final class RandomizerService {
         return count == 1 ? "gracza" : "graczy";
     }
 
+    public List<String> adminArenaList() {
+        List<String> result = new ArrayList<>();
+        for (int i = 0; i < arenas.size(); i++) {
+            RandomizerQueue queue = arenas.get(i);
+            result.add((i + 1) + "|" + queue.mode().id() + "|" + queue.players().size() + "|" + queue.mode().maxPlayers() + "|" + queue.state().name());
+        }
+        return result;
+    }
+
+    public boolean adminTeleportToArena(Player admin, int displayId) {
+        if (displayId < 1 || displayId > arenas.size()) return false;
+        return attachAdminSpectator(admin, arenas.get(displayId - 1));
+    }
+
+    public boolean adminTeleportToPlayer(Player admin, Player target) {
+        RandomizerQueue queue = queueForVisibility(target.getUniqueId());
+        if (queue == null) return false;
+        return attachAdminSpectator(admin, queue);
+    }
+
+    private boolean attachAdminSpectator(Player admin, RandomizerQueue queue) {
+        if (membership.containsKey(admin.getUniqueId())) leave(admin);
+        RandomizerQueue previous = adminSpectators.remove(admin.getUniqueId());
+        if (previous != null) restorePlayer(admin);
+        snapshots.put(admin.getUniqueId(), PlayerSnapshot.take(admin));
+        previousScoreboards.put(admin.getUniqueId(), admin.getScoreboard());
+        adminSpectators.put(admin.getUniqueId(), queue);
+        admin.closeInventory();
+        admin.getInventory().clear();
+        admin.getInventory().setArmorContents(null);
+        admin.setGameMode(GameMode.SPECTATOR);
+        admin.teleport(queue.session().center().clone().add(0, 8, 0));
+        admin.setWorldBorder(queue.session().border());
+        updateScoreboard(admin, queue);
+        updateTab(admin, queue);
+        refreshPlayerVisibility();
+        return true;
+    }
+
+    public boolean adminStopArena(int displayId) {
+        if (displayId < 1 || displayId > arenas.size()) return false;
+        RandomizerQueue queue = arenas.get(displayId - 1);
+        queue.state(GameState.ENDING);
+        List<Player> everyone = new ArrayList<>(online(queue));
+        everyone.addAll(adminSpectators(queue));
+        for (Player player : everyone) {
+            player.showTitle(Title.title(
+                Text.mm(config.adminStopTitle),
+                Text.mm(config.adminStopSubtitle),
+                Title.Times.times(Duration.ofMillis(250), Duration.ofSeconds(4), Duration.ofMillis(750))
+            ));
+            player.sendMessage(Text.mm(config.adminStoppedMessage));
+        }
+        Bukkit.getScheduler().runTaskLater(plugin, () -> finish(queue), 60L);
+        return true;
+    }
+
     public void shutdown() {
         if (ticker != null) ticker.cancel();
         if (lobbyVisualTicker != null) lobbyVisualTicker.cancel();
@@ -1196,6 +1286,11 @@ public final class RandomizerService {
             Player player = Bukkit.getPlayer(id);
             if (player != null) restorePlayer(player);
         }
+        for (UUID id : new ArrayList<>(adminSpectators.keySet())) {
+            Player player = Bukkit.getPlayer(id);
+            if (player != null) restorePlayer(player);
+        }
+        adminSpectators.clear();
         membership.clear();
         separationCooldown.clear();
         arenas.clear();
